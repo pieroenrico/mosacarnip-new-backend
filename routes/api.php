@@ -1,0 +1,59 @@
+<?php
+
+use Illuminate\Http\Request;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
+
+Route::get('colores', 'API\\ColorsController@index')->name('colores.index');
+Route::post('colores', 'API\\ColorsController@store')->name('colores.store');
+Route::post('colores/destroy', 'API\\ColorsController@destroy')->name('colores.destroy');
+Route::get('colores/{id}', 'API\\ColorsController@show')->name('colores.show');
+
+Route::get('provincias', 'API\\ProvinciasController@index')->name('provincias.index');
+Route::post('provincias', 'API\\ProvinciasController@store')->name('provincias.store');
+Route::post('provincias/destroy', 'API\\ProvinciasController@destroy')->name('provincias.destroy');
+Route::get('provincias/{id}', 'API\\ProvinciasController@show')->name('provincias.show');
+
+Route::get('localidades', 'API\\LocalidadesController@index')->name('localidades.index');
+Route::post('localidades', 'API\\LocalidadesController@store')->name('localidades.store');
+Route::post('localidades/destroy', 'API\\LocalidadesController@destroy')->name('localidades.destroy');
+Route::get('localidades/{id}', 'API\\LocalidadesController@show')->name('localidades.show');
+
+Route::get('compradores', 'API\\CompradoresController@index')->name('compradores.index');
+Route::post('compradores', 'API\\CompradoresController@store')->name('compradores.store');
+Route::post('compradores/destroy', 'API\\CompradoresController@destroy')->name('compradores.destroy');
+Route::get('compradores/{id}', 'API\\CompradoresController@show')->name('compradores.show');
+
+
+Route::get('vendedores', 'API\\VendedoresController@index')->name('vendedores.index');
+Route::post('vendedores', 'API\\VendedoresController@store')->name('vendedores.store');
+Route::post('vendedores/destroy', 'API\\VendedoresController@destroy')->name('vendedores.destroy');
+Route::get('vendedores/{id}', 'API\\VendedoresController@show')->name('vendedores.show');
+
+Route::get('packs', 'API\\PacksController@index')->name('packs.index');
+Route::get('stock', 'API\\PacksController@stock')->name('packs.stock');
+Route::get('stock/available', 'API\\PacksController@stockAvailable')->name('packs.stock.available');
+Route::post('packs/create', 'API\\PacksController@create')->name('packs.create');
+Route::post('packs/update', 'API\\PacksController@update')->name('packs.update');
+Route::post('packs/status', 'API\\PacksController@status')->name('packs.status');
+Route::post('packs/destroy', 'API\\PacksController@destroy')->name('packs.destroy');
+Route::post('packs/assign', 'API\\PacksController@assign')->name('packs.assign');
+
+Route::get('lotes', 'API\\LotesController@index')->name('lotes.index');
+Route::get('lotes/{lote_id}', 'API\\LotesController@show')->name('lotes.show');
+Route::post('lotes', 'API\\LotesController@store')->name('lotes.store');
+
+
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return $request->user();
+
+});
