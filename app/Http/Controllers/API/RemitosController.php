@@ -105,6 +105,7 @@ class RemitosController extends BaseController
     {
 
         $packed_lots = $request->input('packs');
+        $built_lot = $request->input('built_lot');
         $vendedor_id = $request->input('vendedor_id');
         $comprador_id = $request->input('comprador_id');
         $numeracion = $request->input('numeracion');
@@ -117,15 +118,24 @@ class RemitosController extends BaseController
             'notas' => $notas,
         ]);
 
-        $lote = Lote::create([
-            'fecha' => Carbon::today()->format('Y-m-d'),
-            'vendedor_id' => $vendedor_id,
-            'num_start' => Packer::getNumStart($numeracion),
-            'num_end' => Packer::getNumEnd($numeracion),
-            'remito_id' => $remito->id,
-        ]);
+        if ( $built_lot ) // Tiene un lote ya armado
+        {
+            $lote = Lote::where(['id' => $built_lot])->first();
+            $lote->remito_id = $remito->id;
+            $lote->save();
+        }
+        else
+        {
+            $lote = Lote::create([
+                'fecha' => Carbon::today()->format('Y-m-d'),
+                'vendedor_id' => $vendedor_id,
+                'num_start' => Packer::getNumStart($numeracion),
+                'num_end' => Packer::getNumEnd($numeracion),
+                'remito_id' => $remito->id,
+            ]);
+            $lotpacks = Packer::packLote($lote, $packed_lots);
+        }
 
-        $lotpacks = Packer::packLote($lote, $packed_lots);
         return $this->success($remito);
 
     }
