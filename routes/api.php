@@ -51,6 +51,12 @@ Route::post('packs/assign', 'API\\PacksController@assign')->name('packs.assign')
 Route::get('lotes', 'API\\LotesController@index')->name('lotes.index');
 Route::get('lotes/{lote_id}', 'API\\LotesController@show')->name('lotes.show');
 Route::post('lotes', 'API\\LotesController@store')->name('lotes.store');
+Route::post('lotes/update', 'API\\LotesController@update')->name('lotes.update');
+
+Route::get('remitos', 'API\\RemitosController@index')->name('remitos.index');
+Route::get('remitos/{remito_id}', 'API\\RemitosController@show')->name('remitos.show');
+Route::post('remitos', 'API\\RemitosController@store')->name('remitos.store');
+Route::post('remitos/update', 'API\\RemitosController@update')->name('remitos.update');
 
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
