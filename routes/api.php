@@ -57,6 +57,7 @@ Route::get('remitos', 'API\\RemitosController@index')->name('remitos.index');
 Route::get('remitos/{remito_id}', 'API\\RemitosController@show')->name('remitos.show');
 Route::post('remitos', 'API\\RemitosController@store')->name('remitos.store');
 Route::post('remitos/update', 'API\\RemitosController@update')->name('remitos.update');
+Route::post('remitos/status', 'API\\RemitosController@status')->name('remitos.status');
 
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {

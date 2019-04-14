@@ -19,6 +19,9 @@ class Lote extends Model
     public function lotpacks () {
         return $this->hasMany(Lotpack::class, 'lote_id');
     }
+    public function history () {
+        return $this->hasMany(LotpackHistory::class, 'lote_id');
+    }
     public function vendedor () {
         return $this->belongsTo(Vendedor::class, 'vendedor_id');
     }

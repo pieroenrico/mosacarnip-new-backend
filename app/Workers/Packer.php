@@ -3,11 +3,128 @@ namespace App\Workers;
 
 use App\Lote;
 use App\Lotpack;
+use App\LotpackHistory;
 use App\Numeracion;
+use App\NumeracionHistory;
 use App\Pack;
 use Carbon\Carbon;
 
 class Packer {
+
+    static function archive($lotpack)
+    {
+        foreach ($lotpack->numeraciones as $numeracion)
+        {
+            $numeracion_history = new NumeracionHistory;
+            $numeracion_history->lotpack_id = $numeracion->lotpack_id;
+            $numeracion_history->sort_order = $numeracion->sort_order;
+            $numeracion_history->calidad = $numeracion->calidad;
+            $numeracion_history->type = $numeracion->type;
+            $numeracion_history->fardos = $numeracion->fardos;
+            $numeracion_history->num_start = $numeracion->num_start;
+            $numeracion_history->num_end = $numeracion->num_end;
+            $numeracion_history->numeracion = $numeracion->numeracion;
+            $numeracion_history->save();
+        }
+        $lotpack_history = new LotpackHistory;
+        $lotpack_history->lote_id = $lotpack->lote_id;
+        $lotpack_history->parent_id = $lotpack->parent_id;
+        $lotpack_history->fecha = $lotpack->fecha;
+        $lotpack_history->lote = $lotpack->lote;
+        $lotpack_history->num_start = $lotpack->num_start;
+        $lotpack_history->num_end = $lotpack->num_end;
+        $lotpack_history->fardos = $lotpack->fardos;
+        $lotpack_history->b = $lotpack->b;
+        $lotpack_history->b14 = $lotpack->b14;
+        $lotpack_history->b12 = $lotpack->b12;
+        $lotpack_history->b34 = $lotpack->b34;
+        $lotpack_history->c = $lotpack->c;
+        $lotpack_history->c14 = $lotpack->c14;
+        $lotpack_history->c12 = $lotpack->c12;
+        $lotpack_history->c34 = $lotpack->c34;
+        $lotpack_history->d = $lotpack->d;
+        $lotpack_history->d14 = $lotpack->d14;
+        $lotpack_history->d12 = $lotpack->d12;
+        $lotpack_history->d34 = $lotpack->d34;
+        $lotpack_history->e = $lotpack->e;
+        $lotpack_history->e14 = $lotpack->e14;
+        $lotpack_history->e12 = $lotpack->e12;
+        $lotpack_history->e34 = $lotpack->e34;
+        $lotpack_history->f = $lotpack->f;
+        $lotpack_history->f14 = $lotpack->f14;
+        $lotpack_history->f12 = $lotpack->f12;
+        $lotpack_history->f34 = $lotpack->f34;
+        $lotpack_history->micro = $lotpack->micro;
+        $lotpack_history->fibra = $lotpack->fibra;
+        $lotpack_history->color_id = $lotpack->color_id;
+        $lotpack_history->notas = $lotpack->notas;
+        $lotpack_history->vendedor_id = $lotpack->vendedor_id;
+        $lotpack_history->save();
+    }
+
+    static function unarchive($lotpack)
+    {
+        /***
+         *
+         * PONER UNA ALERTA CUANDO NO DESARCHIVA UN LOTE PORQUE ESTA FORMANDO PARTE DE OTRO LOTE
+         *
+         *
+         */
+        // Tengo que chequear que el lote todavía está disponible
+        $pack_original = Pack::where(['id' => $lotpack->parent_id])->first();
+        if ( $pack_original->status == 1 ) // está en stock y no está asignado a otro remito o lote
+        {
+            foreach ($lotpack->numeraciones as $numeracion)
+            {
+                $numeracion_unarchive = new Numeracion;
+                $numeracion_unarchive->lotpack_id = $numeracion->lotpack_id;
+                $numeracion_unarchive->sort_order = $numeracion->sort_order;
+                $numeracion_unarchive->calidad = $numeracion->calidad;
+                $numeracion_unarchive->type = $numeracion->type;
+                $numeracion_unarchive->fardos = $numeracion->fardos;
+                $numeracion_unarchive->num_start = $numeracion->num_start;
+                $numeracion_unarchive->num_end = $numeracion->num_end;
+                $numeracion_unarchive->numeracion = $numeracion->numeracion;
+                $numeracion_unarchive->save();
+            }
+            $lotpack_unarchive = new Lotpack;
+            $lotpack_unarchive->lote_id = $lotpack->lote_id;
+            $lotpack_unarchive->parent_id = $lotpack->parent_id;
+            $lotpack_unarchive->fecha = $lotpack->fecha;
+            $lotpack_unarchive->lote = $lotpack->lote;
+            $lotpack_unarchive->num_start = $lotpack->num_start;
+            $lotpack_unarchive->num_end = $lotpack->num_end;
+            $lotpack_unarchive->fardos = $lotpack->fardos;
+            $lotpack_unarchive->b = $lotpack->b;
+            $lotpack_unarchive->b14 = $lotpack->b14;
+            $lotpack_unarchive->b12 = $lotpack->b12;
+            $lotpack_unarchive->b34 = $lotpack->b34;
+            $lotpack_unarchive->c = $lotpack->c;
+            $lotpack_unarchive->c14 = $lotpack->c14;
+            $lotpack_unarchive->c12 = $lotpack->c12;
+            $lotpack_unarchive->c34 = $lotpack->c34;
+            $lotpack_unarchive->d = $lotpack->d;
+            $lotpack_unarchive->d14 = $lotpack->d14;
+            $lotpack_unarchive->d12 = $lotpack->d12;
+            $lotpack_unarchive->d34 = $lotpack->d34;
+            $lotpack_unarchive->e = $lotpack->e;
+            $lotpack_unarchive->e14 = $lotpack->e14;
+            $lotpack_unarchive->e12 = $lotpack->e12;
+            $lotpack_unarchive->e34 = $lotpack->e34;
+            $lotpack_unarchive->f = $lotpack->f;
+            $lotpack_unarchive->f14 = $lotpack->f14;
+            $lotpack_unarchive->f12 = $lotpack->f12;
+            $lotpack_unarchive->f34 = $lotpack->f34;
+            $lotpack_unarchive->micro = $lotpack->micro;
+            $lotpack_unarchive->fibra = $lotpack->fibra;
+            $lotpack_unarchive->color_id = $lotpack->color_id;
+            $lotpack_unarchive->notas = $lotpack->notas;
+            $lotpack_unarchive->vendedor_id = $lotpack->vendedor_id;
+            $lotpack_unarchive->save();
+
+        }
+
+    }
 
     static function packLote($lote, $packed_lots)
     {
@@ -70,9 +187,20 @@ class Packer {
         $release_lotpack->delete();
     }
 
-    static function getLote($id)
+    static function releaseLotpackHistory ($release_lotpack)
     {
-        $lote = Lote::with('lotpacks', 'lotpacks.numeraciones')
+        // Vuelvo a disponible el lote original
+        $pack_original = Pack::where(['id' => $release_lotpack['parent_id']])->first();
+        $pack_original->status = 2;
+        $pack_original->save();
+        // Elimino el lotpack y su numeracion
+        NumeracionHistory::where(['lotpack_id' => $release_lotpack->id])->delete();
+        $release_lotpack->delete();
+    }
+
+    static function getLote($id, $type = '')
+    {
+        $lote = Lote::with('lotpacks', 'lotpacks.numeraciones', 'history', 'history.numeraciones')
             ->where(['id' => $id])
             ->first();
 
@@ -87,7 +215,14 @@ class Packer {
         ];
 
         $lotpacks = [];
-        foreach ( $lote->lotpacks as $lotpack )
+        if ( $type == 'archived' ) {
+            $the_lotpacks = $lote->history;
+        }
+        else
+        {
+            $the_lotpacks = $lote->lotpacks;
+        }
+        foreach ( $the_lotpacks as $lotpack )
         {
             $lotpack_data = [
                 'id' => $lotpack->parent_id,
