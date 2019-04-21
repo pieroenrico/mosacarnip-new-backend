@@ -33,11 +33,15 @@ Route::post('compradores', 'API\\CompradoresController@store')->name('compradore
 Route::post('compradores/destroy', 'API\\CompradoresController@destroy')->name('compradores.destroy');
 Route::get('compradores/{id}', 'API\\CompradoresController@show')->name('compradores.show');
 
-
 Route::get('vendedores', 'API\\VendedoresController@index')->name('vendedores.index');
 Route::post('vendedores', 'API\\VendedoresController@store')->name('vendedores.store');
 Route::post('vendedores/destroy', 'API\\VendedoresController@destroy')->name('vendedores.destroy');
 Route::get('vendedores/{id}', 'API\\VendedoresController@show')->name('vendedores.show');
+
+Route::get('despachos', 'API\\DespachosController@index')->name('despachos.index');
+Route::post('despachos', 'API\\DespachosController@store')->name('despachos.store');
+Route::post('despachos/destroy', 'API\\DespachosController@destroy')->name('despachos.destroy');
+Route::get('despachos/{id}', 'API\\DespachosController@show')->name('despachos.show');
 
 Route::get('packs', 'API\\PacksController@index')->name('packs.index');
 Route::get('stock', 'API\\PacksController@stock')->name('packs.stock');
@@ -57,7 +61,14 @@ Route::get('remitos', 'API\\RemitosController@index')->name('remitos.index');
 Route::get('remitos/{remito_id}', 'API\\RemitosController@show')->name('remitos.show');
 Route::post('remitos', 'API\\RemitosController@store')->name('remitos.store');
 Route::post('remitos/update', 'API\\RemitosController@update')->name('remitos.update');
+Route::post('remitos/partial', 'API\\RemitosController@partial')->name('remitos.partial');
 Route::post('remitos/status', 'API\\RemitosController@status')->name('remitos.status');
+
+Route::get('reportes/historico', 'API\\ReportesController@historico')->name('reportes.historico');
+Route::get('reportes/stock', 'API\\ReportesController@stock')->name('reportes.stock');
+Route::get('reportes/remitos', 'API\\ReportesController@remitos')->name('reportes.remitos');
+Route::get('reportes/despachos', 'API\\ReportesController@despachos')->name('reportes.despachos');
+Route::get('reportes/stock/evolution', 'API\\ReportesController@stockEvolution')->name('reportes.stock-evolution');
 
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {

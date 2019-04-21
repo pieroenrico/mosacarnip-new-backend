@@ -6,8 +6,10 @@ use App\Color;
 use App\Lote;
 use App\Lotpack;
 use App\Numeracion;
+use App\NumeracionHistory;
 use App\Pack;
 use App\Remito;
+use App\Workers\Mosa;
 use App\Workers\Packer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -24,11 +26,11 @@ class RemitosController extends BaseController
      */
     public function index()
     {
-        $lotes = Remito::with('vendedor', 'comprador')
+        $remitos = Remito::with('vendedor', 'comprador', 'vendedor.provincia', 'vendedor.localidad', 'comprador.provincia', 'comprador.localidad')
             ->orderBy('id', 'desc')
             ->get();
 
-        return $this->success($lotes);
+        return $this->success($remitos);
     }
 
     public function destroy(Request $request)
@@ -57,7 +59,7 @@ class RemitosController extends BaseController
             'fecha' => $remito->fecha_human,
             'code' => $remito->code,
             'notas' => $remito->notas,
-            'lote' => Packer::getLote($remito->lote->id, $remito->isArchived ? 'archived' : '')
+            'lote' => Mosa::get_lote($remito->lote->id, $remito->isArchived ? 'archived' : '')
         ];
 
         return $this->success($data);
@@ -71,29 +73,9 @@ class RemitosController extends BaseController
      */
     public function update(Request $request)
     {
-
-        $delivery_id = $request->input('delivery_id');
-        $packed_lots = $request->input('packs');
-        $numeracion = $request->input('numeracion');
-        $notas = $request->input('notas');
-
-        $remito = Remito::with('lote')->where(['id' => $delivery_id])->first();
-        $remito->notas = $notas;
-        $remito->save();
-
-        $remito->lote->num_start = Packer::getNumStart($numeracion);
-        $remito->lote->num_end = Packer::getNumEnd($numeracion);
-        $remito->lote->save();
-
-        // releasing current lots
-        foreach ( $remito->lote->lotpacks as $release_lotpack )
-        {
-            Packer::releaseLotpack($release_lotpack);
-        }
-        $packed_lots = Packer::packLote($remito->lote, $packed_lots);
+        $remito = Mosa::update_remito($request->input());
         return $this->success($remito);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -104,38 +86,7 @@ class RemitosController extends BaseController
     public function store(Request $request)
     {
 
-        $packed_lots = $request->input('packs');
-        $built_lot = $request->input('built_lot');
-        $vendedor_id = $request->input('vendedor_id');
-        $comprador_id = $request->input('comprador_id');
-        $numeracion = $request->input('numeracion');
-        $notas = $request->input('notas');
-
-        $remito = Remito::create([
-            'fecha' => Carbon::today()->format('Y-m-d'),
-            'vendedor_id' => $vendedor_id,
-            'comprador_id' => $comprador_id,
-            'notas' => $notas,
-        ]);
-
-        if ( $built_lot ) // Tiene un lote ya armado
-        {
-            $lote = Lote::where(['id' => $built_lot])->first();
-            $lote->remito_id = $remito->id;
-            $lote->save();
-        }
-        else
-        {
-            $lote = Lote::create([
-                'fecha' => Carbon::today()->format('Y-m-d'),
-                'vendedor_id' => $vendedor_id,
-                'num_start' => Packer::getNumStart($numeracion),
-                'num_end' => Packer::getNumEnd($numeracion),
-                'remito_id' => $remito->id,
-            ]);
-            $lotpacks = Packer::packLote($lote, $packed_lots);
-        }
-
+        $remito = Mosa::store_remito($request->input());
         return $this->success($remito);
 
     }
@@ -145,21 +96,19 @@ class RemitosController extends BaseController
         $remito_id = $request->input('remito_id');
         $status = $request->input('status');
 
-        $remito = Remito::where(['id' => $remito_id])->first();
-
         switch ($status)
         {
             case 0: // confirm
-                $this->confirm($remito);
+                Mosa::confirm_remito($remito_id);
                 break;
             case 1: // approve total
-                $this->approve($remito);
+                Mosa::approve_remito($remito_id);
                 break;
             case 2: // approve partial
-                $this->partial($remito);
+                Mosa::partial_approve_remito($request->input());
                 break;
             case 3: // reject
-                $this->reject($remito);
+                Mosa::reject_remito($remito_id);
                 break;
         }
     }
@@ -180,6 +129,28 @@ class RemitosController extends BaseController
         }
         // en caso de que el estado era 1 (aprobado), entonces no desarchivo, no es necesario
 
+        if ( $remito->status == 2) { // si el estado del remito es rechazado parcial, hago los merges necesarios
+            $lotpacks_to_collect = $remito->lotpacks;
+            foreach ( $lotpacks_to_collect as $release_lotpack ) {
+
+                $pack_original = Pack::where(['id' => $release_lotpack->parent_id])->first();
+                $total = 0;
+                foreach ( $release_lotpack->numeraciones as $numeracion )
+                {
+                    if ($numeracion->removed) {
+                        $release_lotpack[$numeracion['type']] += (int)$numeracion['fardos'];
+                        $pack_original[$numeracion['type']] += (int)$numeracion['fardos'];
+                        $total += (int)$numeracion['fardos'];
+                    }
+                }
+                $release_lotpack->fardos += $total;
+                $pack_original->fardos += $total;
+                $pack_original->save();
+                Packer::unarchive($release_lotpack);
+                Packer::releaseLotpackHistory($release_lotpack);
+            }
+        }
+
         $remito->status = 0;
         $remito->save();
     }
@@ -191,10 +162,34 @@ class RemitosController extends BaseController
         $remito->status = 1;
         $remito->save();
     }
-    private function partial($remito)
+    public function partial(Request $request)
     {
+
+        Mosa::partial_approve_remito($request->input());
+        dd('done');
+
+        $delivery_id = $request->input('delivery_id');
+        $packed_lots = $request->input('packs');
+        $numeracion = $request->input('numeracion');
+        $notas = $request->input('notas');
+        $lote_id = $request->input('lote_id');
+
+        $remito = Remito::where(['id' => $delivery_id])
+            ->first();
+
+        foreach ( $packed_lots as $packed_lot )
+        {
+            Packer::partialLote($packed_lot, $lote_id);
+        }
+
+        $lotpacks_for_this_lot = Lotpack::where(['lote_id' => $lote_id]);
+        $numeraciones_for_this_lot = Numeracion::whereIn('lotpack_id', $lotpacks_for_this_lot->pluck('id')->toArray())->delete();
+        $lotpacks_for_this_lot->delete();
+
         $remito->status = 2;
         $remito->save();
+
+        $this->success($remito);
     }
     private function reject($remito)
     {

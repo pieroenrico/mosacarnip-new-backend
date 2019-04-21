@@ -7,6 +7,7 @@ use App\Lote;
 use App\Lotpack;
 use App\Numeracion;
 use App\Pack;
+use App\Workers\Mosa;
 use App\Workers\Packer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -51,18 +52,17 @@ class LotesController extends BaseController
     public function store(Request $request)
     {
 
-        $packed_lots = $request->input('packs');
+        $lotpacks = $request->input('packs');
         $vendedor_id = $request->input('vendedor_id');
         $numeracion = $request->input('numeracion');
 
-        $lote = Lote::create([
-            'fecha' => Carbon::today()->format('Y-m-d'),
+        // Creo un lote para este remito
+        $lote = Mosa::create_lote([
             'vendedor_id' => $vendedor_id,
-            'num_start' => Packer::getNumStart($numeracion),
-            'num_end' => Packer::getNumEnd($numeracion),
+            'numeracion' => $numeracion,
+            'lotpacks' => $lotpacks,
         ]);
 
-        $lotpacks = Packer::packLote($lote, $packed_lots);
         return $this->success($lote);
     }
 
@@ -77,20 +77,15 @@ class LotesController extends BaseController
     {
 
         $lot_id = $request->input('lot_id');
-        $packed_lots = $request->input('packs');
+        $lotpacks = $request->input('packs');
         $numeracion = $request->input('numeracion');
 
         $lote = Lote::with('lotpacks')->where(['id' => $lot_id])->first();
-        $lote->num_start = Packer::getNumStart($numeracion);
-        $lote->num_end = Packer::getNumEnd($numeracion);
-        $lote->save();
-
-        // releasing current lots
-        foreach ( $lote->lotpacks as $release_lotpack )
-        {
-            Packer::releaseLotpack($release_lotpack);
-        }
-        $packed_lots = Packer::packLote($lote, $packed_lots);
+        $lote = Mosa::update_lote([
+            'lote' => $lote,
+            'numeracion' => $numeracion,
+            'lotpacks' => $lotpacks,
+        ]);
         return $this->success($lote);
     }
 

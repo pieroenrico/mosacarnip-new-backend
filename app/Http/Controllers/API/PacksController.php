@@ -23,10 +23,21 @@ class PacksController extends BaseController
 
         $vendedor_id = request()->input('vendedor_id');
 
-        $packs = Pack::orderBy('updated_at')
-            ->where(['vendedor_id' => $vendedor_id])
-            ->inbox()
-            ->get();
+        if ( $vendedor_id )
+        {
+            $packs = Pack::orderBy('updated_at')
+                ->where(['vendedor_id' => $vendedor_id])
+                ->inbox()
+                ->get();
+        }
+        else
+        {
+
+            $packs = Pack::orderBy('updated_at')
+                ->inbox()
+                ->get();
+        }
+
 
         $data = [];
         foreach ( $packs as $pack )
@@ -42,10 +53,19 @@ class PacksController extends BaseController
 
         $vendedor_id = request()->input('vendedor_id');
 
-        $packs = Pack::orderBy('updated_at')
-            ->where(['vendedor_id' => $vendedor_id])
-            ->stock()
-            ->get();
+        if ( $vendedor_id )
+        {
+            $packs = Pack::orderBy('updated_at')
+                ->where(['vendedor_id' => $vendedor_id])
+                ->stock()
+                ->get();
+        }
+        else
+        {
+            $packs = Pack::orderBy('updated_at')
+                ->stock()
+                ->get();
+        }
 
         $data = [];
         foreach ($packs as $pack) {

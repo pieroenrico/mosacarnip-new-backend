@@ -9,6 +9,7 @@ class Pack extends Model
 {
     protected $table = 'packs';
     protected $guarded = ['id'];
+    protected $appends = ['numeracion', 'fecha_human'];
 
     public function forInput()
     {
@@ -46,6 +47,10 @@ class Pack extends Model
     {
         return $this->belongsTo(Color::class, 'color_id')->withDefault();
     }
+    public function vendedor ()
+    {
+        return $this->belongsTo(Vendedor::class, 'vendedor_id');
+    }
     /**
     **********************************
     SCOPES
@@ -70,7 +75,13 @@ class Pack extends Model
     **/
     public function getFechaHumanAttribute ()
     {
-        return Carbon::createFromFormat('Y-m-d', $this->fecha)->format('d/m/Y');
+        if ( $this->fecha != '') {
+            return Carbon::createFromFormat('Y-m-d', $this->fecha)->format('d/m/Y');
+        }
+        else
+        {
+            return '';
+        }
     }
     /*public function getFardosAttribute ()
     {

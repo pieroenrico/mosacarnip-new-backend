@@ -31,11 +31,11 @@ class Remito extends Model
     **********************************
     **/
     public function getIsArchivedAttribute () {
-        return $this->status == 3;
+        return $this->status == 3 || $this->status == 2 || $this->status == 1;
     }
 
     public function getLotpacksAttribute () {
-        if ( $this->status == 3 )
+        if ( $this->status == 3 || $this->status == 1 || $this->status == 2)
         {
             return $this->lote()->first()->history()->get();
         }
@@ -43,6 +43,9 @@ class Remito extends Model
         {
             return $this->lote()->first()->lotpacks()->get();
         }
+    }
+    public function getLotpacksFullAttribute () {
+        return $this->lote()->first()->history_full()->get(); // Incluye los que se habian removido originalmente
     }
     public function getCodeAttribute ()
     {

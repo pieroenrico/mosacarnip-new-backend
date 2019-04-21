@@ -17,6 +17,13 @@ class Color extends Model
     **/
     public function getCodeAttribute ()
     {
-        return str_pad($this->attributes['id'], config('mosa.code_pad'), '0', STR_PAD_LEFT);
+        if (array_key_exists('id', $this->attributes))
+        {
+            return str_pad($this->attributes['id'], config('mosa.code_pad'), '0', STR_PAD_LEFT);
+        }
+        else
+        {
+            return null;
+        }
     }
 }

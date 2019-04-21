@@ -20,10 +20,16 @@ class Lote extends Model
         return $this->hasMany(Lotpack::class, 'lote_id');
     }
     public function history () {
+        return $this->hasMany(LotpackHistory::class, 'lote_id')->where(['partial' => 0]);
+    }
+    public function history_full () {
         return $this->hasMany(LotpackHistory::class, 'lote_id');
     }
     public function vendedor () {
         return $this->belongsTo(Vendedor::class, 'vendedor_id');
+    }
+    public function remito () {
+        return $this->belongsTo(Remito::class, 'remito_id');
     }
     /**
     **********************************
