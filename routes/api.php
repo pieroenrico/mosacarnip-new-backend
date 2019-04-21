@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::post('oauth/token', 'API\\AccessTokenController@issueToken');
+Route::post('login', 'API\\OAuthController@login');
+
 Route::get('colores', 'API\\ColorsController@index')->name('colores.index');
 Route::post('colores', 'API\\ColorsController@store')->name('colores.store');
 Route::post('colores/destroy', 'API\\ColorsController@destroy')->name('colores.destroy');
