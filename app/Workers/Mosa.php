@@ -70,6 +70,7 @@ class Mosa {
         $lotpacks = self::param('packs', $data);
         $numeracion = self::param('numeracion', $data);
         $notas = self::param('notas', $data);
+        $approve = self::param('approve', $data);
 
         $remito = Remito::with('lote')->where(['id' => $remito_id])->first();
         $remito->notas = $notas;
@@ -80,6 +81,11 @@ class Mosa {
             'numeracion' => $numeracion,
             'lotpacks' => $lotpacks,
         ]);
+
+        if ($approve) // Aprobado Parcial
+        {
+            self::approve_remito($remito_id);
+        }
 
         return $remito;
     }
