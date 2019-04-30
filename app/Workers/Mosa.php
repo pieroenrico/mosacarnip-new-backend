@@ -362,8 +362,8 @@ class Mosa {
         $lote = Lote::create([
             'fecha' => Carbon::today()->format('Y-m-d'),
             'vendedor_id' => $vendedor_id,
-            'num_start' => Packer::getNumStart($numeracion),
-            'num_end' => Packer::getNumEnd($numeracion),
+            'num_start' => self::getNumStart($numeracion),
+            'num_end' => self::getNumEnd($numeracion),
             'remito_id' => $remito_id,
         ]);
         self::bundle_lote($lote, $lotpacks);
