@@ -38,6 +38,7 @@ class DespachosController extends BaseController
 
         $request->validate($this->rules);
         $item = $request->input('item');
+        unset($item['fecha_human']);
 
         if ( is_null($item['id']) )
         {

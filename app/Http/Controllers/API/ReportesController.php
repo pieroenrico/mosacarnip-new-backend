@@ -31,7 +31,7 @@ class ReportesController extends BaseController
         $lotpacks = Pack::all();
         $today = Carbon::today();
         $dates = collect();
-        for ( $i = 0; $i - 10; $i++)
+        for ( $i = 0; $i - 30; $i++)
         {
             $date_sub = $today->subDay();
             $date = $date_sub->format('Y-m-d');
